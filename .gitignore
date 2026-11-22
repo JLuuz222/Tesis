@@ -1,0 +1,19 @@
+# Archivos que Git NO debe subir al repositorio.
+
+# Entorno virtual de Python: cada uno crea el suyo en su PC.
+.venv/
+venv/
+
+# Configuración local con contraseñas. Nunca se sube.
+.env
+
+# Archivos que Python genera solo al ejecutar.
+__pycache__/
+*.pyc
+
+# Archivos que suban los usuarios (manuales, adjuntos).
+uploads/
+
+# Configuración del editor.
+.vscode/
+.idea/

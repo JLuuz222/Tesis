@@ -1,0 +1,15 @@
+# Dependencias de Python del proyecto.
+# Se instalan todas juntas con:  pip install -r requirements.txt
+#
+# Flask              -> el framework web (rutas, plantillas, sesiones).
+# Flask-SQLAlchemy   -> integra SQLAlchemy (el ORM) con Flask.
+# PyMySQL            -> el "driver": el programa que habla con MySQL.
+# cryptography       -> lo necesita PyMySQL para el login seguro de MySQL 8.4
+#                       (método caching_sha2_password). Sin esto, la conexión falla.
+# python-dotenv      -> lee el archivo .env y carga sus valores como variables
+#                       de entorno (así la contraseña no queda escrita en el código).
+Flask==3.1.*
+Flask-SQLAlchemy==3.1.*
+PyMySQL==1.1.*
+cryptography>=44
+python-dotenv==1.*

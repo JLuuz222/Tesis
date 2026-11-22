@@ -1,0 +1,32 @@
+{# "extends" hereda todo base.html y solo reemplaza los bloques que definimos acá. #}
+{% extends "base.html" %}
+
+{% block title %}Inicio · Pintegral{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-4">Estado del sistema</h1>
+
+{# {% if %} es una condición de Jinja2: se evalúa en el servidor, antes de enviar el HTML. #}
+{% if estado.conectado %}
+    <div class="alert alert-success">
+        Conectado a MySQL {{ estado.version }}.
+    </div>
+
+    <h2 class="h5">Roles cargados en la base</h2>
+    <table class="table table-bordered bg-white w-auto">
+        <thead><tr><th>Id</th><th>Nombre</th><th>Descripción</th></tr></thead>
+        <tbody>
+        {# {% for %} repite la fila por cada rol. {{ }} imprime un valor (escapando HTML). #}
+        {% for rol in estado.roles %}
+            <tr><td>{{ rol.id_rol }}</td><td>{{ rol.nombre }}</td><td>{{ rol.descripcion }}</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <div class="alert alert-danger">
+        <strong>No se pudo conectar a la base.</strong><br>
+        Revisá el archivo .env y que el servicio de MySQL esté corriendo.<br>
+        <small class="text-muted">{{ estado.error }}</small>
+    </div>
+{% endif %}
+{% endblock %}
