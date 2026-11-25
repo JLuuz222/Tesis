@@ -2,6 +2,7 @@
 -- TESIS2026 - Sistema de gestión de tareas interdepartamentales (Pintegral)
 -- DER v3 - Script de creación de la base de datos (MySQL 8.4 LTS)
 -- Probado en MySQL 8.4.2 y 8.0.46.
+-- Incluye la migración 001 (legajo CHAR(5) y dominios de email).
 --
 -- Convenciones:
 --   * Nombres de tablas y columnas en singular, minúscula y snake_case.
@@ -73,7 +74,7 @@ CREATE TABLE usuario (
     apellido          VARCHAR(100) NOT NULL,
     email             VARCHAR(100) NOT NULL,
     password_hash     VARCHAR(255) NOT NULL,
-    numero_legajo     INT          NOT NULL,
+    numero_legajo     CHAR(5)      NOT NULL,
     id_rol            INT          NOT NULL,
     id_departamento   INT          NOT NULL,
     id_puesto         INT          NULL,
@@ -87,6 +88,8 @@ CREATE TABLE usuario (
     PRIMARY KEY (id_usuario),
     UNIQUE KEY uq_usuario_email (email),
     UNIQUE KEY uq_usuario_legajo (numero_legajo),
+    -- Legajo: exactamente 5 dígitos ("00005") y distinto de "00000".
+    CONSTRAINT ck_usuario_legajo CHECK (numero_legajo REGEXP '^[0-9]{5}$' AND numero_legajo <> '00000'),
     CONSTRAINT fk_usuario_rol FOREIGN KEY (id_rol)
         REFERENCES rol (id_rol),
     CONSTRAINT fk_usuario_departamento FOREIGN KEY (id_departamento)
@@ -531,4 +534,7 @@ INSERT INTO parametro (clave, valor, descripcion) VALUES
     ('anios_retencion',         '2',   'Módulo 7: años que se conservan las tareas archivadas'),
     ('umbral_tareas_abiertas',  '10',  'HU20: tareas abiertas a partir de las cuales se marca sobrecarga'),
     ('horas_sin_actualizar',    '48',  'HU13: horas sin cambios para alertar una tarea crítica'),
-    ('tamanio_max_archivo_mb',  '10',  'HU18: tamaño máximo de un adjunto');
+    ('tamanio_max_archivo_mb',  '10',  'HU18: tamaño máximo de un adjunto'),
+    ('dominios_email_permitidos',
+     'gmail.com,gmail.com.ar,outlook.com,outlook.com.ar,hotmail.com,hotmail.com.ar,yahoo.com,yahoo.com.ar',
+     'Dominios de email aceptados al crear usuarios, separados por coma');

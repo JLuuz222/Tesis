@@ -10,7 +10,7 @@ variable global, la crea una función (create_app). Ventajas:
 from flask import Flask
 
 from config import Config
-from app.extensions import db
+from app.extensions import csrf, db, login_manager
 
 
 def create_app(config_class: type = Config) -> Flask:
@@ -21,12 +21,36 @@ def create_app(config_class: type = Config) -> Flask:
 
     # Conecta las extensiones con esta app concreta.
     db.init_app(app)
+    login_manager.init_app(app)
+    csrf.init_app(app)
 
     # Importamos los modelos para que SQLAlchemy conozca las tablas.
     from app.data import models  # noqa: F401
 
+    # Flask-Login guarda en la cookie solo el id del usuario. En cada pedido
+    # llama a esta función para convertir ese id en el objeto Usuario
+    # (current_user).
+    from app.business.auth_service import obtener_usuario_por_id
+
+    @login_manager.user_loader
+    def cargar_usuario(id_usuario: str):
+        return obtener_usuario_por_id(int(id_usuario))
+
     # Registramos los blueprints (grupos de rutas) de la capa de presentación.
+    from app.presentation.routes.auth import auth_bp
+    from app.presentation.routes.errores import errores_bp
     from app.presentation.routes.main import main_bp
     app.register_blueprint(main_bp)
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(errores_bp)
+
+    # Hace disponibles las constantes de roles en todas las plantillas:
+    # {% if current_user.tiene_rol(roles.ADMINISTRADOR) %}
+    from app.business import roles
+    app.jinja_env.globals["roles"] = roles
+
+    # Comandos de consola (flask --app run crear-admin).
+    from app.cli import registrar_comandos
+    registrar_comandos(app)
 
     return app

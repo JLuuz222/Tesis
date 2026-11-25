@@ -51,6 +51,16 @@ class Config:
     # consume memoria.
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    # Cookies de sesión:
+    #   HTTPONLY: JavaScript no puede leer la cookie (si alguien inyecta un
+    #             script en una página, no puede robar la sesión).
+    #   SAMESITE "Lax": el navegador no manda la cookie en formularios que
+    #             vienen desde otro sitio.
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = "Lax"
+    # Cuánto dura "Mantener la sesión iniciada" (en segundos): 7 días.
+    REMEMBER_COOKIE_DURATION = 7 * 24 * 60 * 60
+
     SQLALCHEMY_ENGINE_OPTIONS = {
         # Antes de usar una conexión guardada, verifica que siga viva.
         # MySQL corta las conexiones inactivas después de un rato; sin esto

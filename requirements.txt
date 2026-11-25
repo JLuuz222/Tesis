@@ -8,8 +8,15 @@
 #                       (método caching_sha2_password). Sin esto, la conexión falla.
 # python-dotenv      -> lee el archivo .env y carga sus valores como variables
 #                       de entorno (así la contraseña no queda escrita en el código).
+# Flask-Login        -> maneja la sesión: quién inició sesión, login/logout,
+#                       y bloquea páginas a quien no entró.          (paso 0.2)
+# Flask-WTF          -> formularios con validación y protección CSRF.  (paso 0.2)
+# email-validator    -> lo usa Flask-WTF para validar direcciones de email.
 Flask==3.1.*
 Flask-SQLAlchemy==3.1.*
 PyMySQL==1.1.*
 cryptography>=44
 python-dotenv==1.*
+Flask-Login==0.6.*
+Flask-WTF==1.2.*
+email-validator==2.*

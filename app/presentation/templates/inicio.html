@@ -4,29 +4,22 @@
 {% block title %}Inicio · Pintegral{% endblock %}
 
 {% block content %}
-<h1 class="h3 mb-4">Estado del sistema</h1>
+<h1 class="h3 mb-4">Hola, {{ current_user.nombre }}</h1>
 
-{# {% if %} es una condición de Jinja2: se evalúa en el servidor, antes de enviar el HTML. #}
-{% if estado.conectado %}
-    <div class="alert alert-success">
-        Conectado a MySQL {{ estado.version }}.
+<div class="card w-auto" style="max-width: 32rem;">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-5">Rol</dt>
+            <dd class="col-7">{{ current_user.rol.nombre }}</dd>
+            <dt class="col-5">Departamento</dt>
+            <dd class="col-7">{{ current_user.departamento.nombre }}</dd>
+            <dt class="col-5">Email</dt>
+            <dd class="col-7">{{ current_user.email }}</dd>
+            <dt class="col-5">Último acceso</dt>
+            {# strftime da formato a la fecha: día/mes/año hora:minutos. #}
+            <dd class="col-7">{{ current_user.ultimo_acceso.strftime('%d/%m/%Y %H:%M') if current_user.ultimo_acceso else '-' }}</dd>
+        </dl>
     </div>
-
-    <h2 class="h5">Roles cargados en la base</h2>
-    <table class="table table-bordered bg-white w-auto">
-        <thead><tr><th>Id</th><th>Nombre</th><th>Descripción</th></tr></thead>
-        <tbody>
-        {# {% for %} repite la fila por cada rol. {{ }} imprime un valor (escapando HTML). #}
-        {% for rol in estado.roles %}
-            <tr><td>{{ rol.id_rol }}</td><td>{{ rol.nombre }}</td><td>{{ rol.descripcion }}</td></tr>
-        {% endfor %}
-        </tbody>
-    </table>
-{% else %}
-    <div class="alert alert-danger">
-        <strong>No se pudo conectar a la base.</strong><br>
-        Revisá el archivo .env y que el servicio de MySQL esté corriendo.<br>
-        <small class="text-muted">{{ estado.error }}</small>
-    </div>
-{% endif %}
+</div>
+<p class="text-muted mt-3 small">Las tareas llegan en el Módulo 1.</p>
 {% endblock %}

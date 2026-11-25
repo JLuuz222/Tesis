@@ -12,10 +12,34 @@
     <nav class="navbar navbar-dark bg-dark mb-4">
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('main.inicio') }}">Pintegral · Gestión de tareas</a>
+
+            {# current_user lo pone Flask-Login en todas las plantillas. #}
+            {% if current_user.is_authenticated %}
+            <div class="d-flex align-items-center gap-3">
+                {% if current_user.tiene_rol(roles.ADMINISTRADOR) %}
+                    <a class="link-light small" href="{{ url_for('main.estado_sistema') }}">Estado del sistema</a>
+                {% endif %}
+                <span class="text-light small">
+                    {{ current_user.nombre_completo }} · {{ current_user.rol.nombre }}
+                </span>
+                {# Cerrar sesión es un formulario POST con su token CSRF, no un link. #}
+                <form method="post" action="{{ url_for('auth.logout') }}" class="m-0">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-outline-light btn-sm">Cerrar sesión</button>
+                </form>
+            </div>
+            {% endif %}
         </div>
     </nav>
 
     <main class="container">
+        {# Mensajes "flash": avisos de una sola vez que deja una ruta antes de redirigir. #}
+        {% with mensajes = get_flashed_messages(with_categories=true) %}
+            {% for categoria, mensaje in mensajes %}
+                <div class="alert alert-{{ categoria }}">{{ mensaje }}</div>
+            {% endfor %}
+        {% endwith %}
+
         {# Acá se inserta el contenido de cada página hija. #}
         {% block content %}{% endblock %}
     </main>
