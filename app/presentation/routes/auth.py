@@ -6,10 +6,29 @@ from urllib.parse import urlsplit
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 
-from app.business import auth_service
-from app.presentation.forms import LoginForm
+from app.business import auth_service, usuario_service
+from app.business.validaciones_usuario import ErrorDeValidacion
+from app.presentation.forms import CambiarClaveForm, LoginForm
 
 auth_bp = Blueprint("auth", __name__)
+
+# Páginas que se pueden usar aunque haya que cambiar la contraseña.
+_PERMITIDAS_CON_CLAVE_TEMPORAL = {"auth.cambiar_clave", "auth.logout", "static"}
+
+
+@auth_bp.before_app_request
+def exigir_cambio_de_clave():
+    """Se ejecuta antes de CADA pedido a cualquier página del sistema.
+
+    Si el usuario entró con una contraseña temporal, lo manda a cambiarla
+    y no lo deja ir a ninguna otra página hasta que lo haga.
+    """
+    # endpoint es None para direcciones que no existen (incluido el
+    # /favicon.ico que piden los navegadores): esas siguen a su 404.
+    if (current_user.is_authenticated and current_user.debe_cambiar_clave
+            and request.endpoint is not None
+            and request.endpoint not in _PERMITIDAS_CON_CLAVE_TEMPORAL):
+        return redirect(url_for("auth.cambiar_clave"))
 
 
 def _es_url_interna(url: str | None) -> bool:
@@ -61,3 +80,19 @@ def logout():
     logout_user()
     flash("Cerraste sesión.", "info")
     return redirect(url_for("auth.login"))
+
+
+@auth_bp.route("/cambiar-clave", methods=["GET", "POST"])
+@login_required
+def cambiar_clave():
+    form = CambiarClaveForm()
+    if form.validate_on_submit():
+        try:
+            usuario_service.cambiar_mi_clave(current_user, form.clave_actual.data,
+                                             form.clave_nueva.data, request.remote_addr)
+        except ErrorDeValidacion as error:
+            flash(str(error), "danger")
+        else:
+            flash("Tu contraseña se cambió correctamente.", "success")
+            return redirect(url_for("main.inicio"))
+    return render_template("auth/cambiar_clave.html", form=form)

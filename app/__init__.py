@@ -37,17 +37,22 @@ def create_app(config_class: type = Config) -> Flask:
         return obtener_usuario_por_id(int(id_usuario))
 
     # Registramos los blueprints (grupos de rutas) de la capa de presentación.
+    from app.presentation.routes.areas import areas_bp
     from app.presentation.routes.auth import auth_bp
     from app.presentation.routes.errores import errores_bp
     from app.presentation.routes.main import main_bp
+    from app.presentation.routes.usuarios import usuarios_bp
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(errores_bp)
+    app.register_blueprint(usuarios_bp)
+    app.register_blueprint(areas_bp)
 
     # Hace disponibles las constantes de roles en todas las plantillas:
     # {% if current_user.tiene_rol(roles.ADMINISTRADOR) %}
-    from app.business import roles
+    from app.business import permisos, roles
     app.jinja_env.globals["roles"] = roles
+    app.jinja_env.globals["permisos"] = permisos
 
     # Comandos de consola (flask --app run crear-admin).
     from app.cli import registrar_comandos

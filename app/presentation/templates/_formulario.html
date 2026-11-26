@@ -1,0 +1,32 @@
+{# Macros: "funciones" de Jinja2 que devuelven HTML. Se importan en otras
+   plantillas con {% from "_formulario.html" import campo %} y evitan repetir
+   el mismo bloque de etiqueta + campo + errores en cada formulario. #}
+
+{% macro campo(field, ancho="col-md-6") %}
+<div class="{{ ancho }} mb-3">
+    {{ field.label(class="form-label") }}
+    {% set clase = "form-select" if field.type == "SelectField" else "form-control" %}
+    {{ field(class=clase + (" is-invalid" if field.errors else "")) }}
+    {% for error in field.errors %}
+        <div class="invalid-feedback">{{ error }}</div>
+    {% endfor %}
+    {% if field.description %}
+        <div class="form-text">{{ field.description }}</div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{# Botón que envía un POST con su token CSRF. confirmar: texto de la
+   pregunta "¿Seguro?" que muestra el navegador antes de enviar. #}
+{% macro boton_post(url, texto, clase="btn-outline-secondary", confirmar=None, campos={}) %}
+<form method="post" action="{{ url }}" class="d-inline"
+      {# tojson convierte el texto en un string de JavaScript seguro, aunque
+         tenga comillas (por ejemplo un apellido como O'Connor). #}
+      {% if confirmar %}onsubmit='return confirm({{ confirmar|tojson }});'{% endif %}>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {% for nombre, valor in campos.items() %}
+        <input type="hidden" name="{{ nombre }}" value="{{ valor }}">
+    {% endfor %}
+    <button type="submit" class="btn btn-sm {{ clase }}">{{ texto }}</button>
+</form>
+{% endmacro %}

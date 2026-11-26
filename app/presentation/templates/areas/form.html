@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% from "_formulario.html" import campo %}
+
+{% block title %}{{ 'Editar área' if area else 'Nueva área' }} · Pintegral{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3">{{ 'Editar el área ' ~ area.nombre if area else 'Nueva área' }}</h1>
+
+<form method="post" novalidate class="card card-body">
+    {{ form.hidden_tag() }}
+    <div class="row">
+        {{ campo(form.nombre, "col-md-8") }}
+        {{ campo(form.codigo, "col-md-4") }}
+        {{ campo(form.descripcion, "col-12") }}
+        {{ campo(form.email_contacto) }}
+        {{ campo(form.telefono_contacto) }}
+        {% if area %}
+            {{ campo(form.id_usuario_jefe) }}
+            <div class="col-md-6 mb-3 form-text align-self-end">
+                Solo aparecen los usuarios activos de esta área con rol Jefe de área.
+            </div>
+        {% endif %}
+    </div>
+    <div class="d-flex gap-2">
+        {{ form.enviar(class="btn btn-primary") }}
+        <a class="btn btn-outline-secondary" href="{{ url_for('areas.lista') }}">Cancelar</a>
+    </div>
+</form>
+{% endblock %}

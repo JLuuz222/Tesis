@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Contraseña temporal · Pintegral{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 36rem;">
+    <div class="card-body">
+        <h1 class="h4">Usuario {{ accion }}</h1>
+        <p class="mb-2">La contraseña temporal de <strong>{{ usuario.nombre_completo }}</strong>
+           ({{ usuario.email }}) es:</p>
+        <p class="fs-3 font-monospace bg-light border rounded p-2 text-center user-select-all">{{ clave }}</p>
+        <div class="alert alert-warning mb-3">
+            <strong>Anotala ahora: no se vuelve a mostrar.</strong> El sistema solo guarda su hash.
+            Pasásela a la persona por un medio privado. En su primer ingreso va a tener que elegir su propia contraseña.
+        </div>
+        <a class="btn btn-primary" href="{{ url_for('usuarios.lista') }}">Volver a usuarios</a>
+    </div>
+</div>
+{% endblock %}

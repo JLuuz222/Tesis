@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% from "_formulario.html" import campo %}
+
+{% block title %}{{ 'Editar usuario' if usuario else 'Nuevo usuario' }} · Pintegral{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-1">{{ 'Editar a ' ~ usuario.nombre_completo if usuario else 'Nuevo usuario' }}</h1>
+{% if not usuario %}
+<p class="text-muted">Al guardar, el sistema genera una contraseña temporal para pasarle a la persona.
+   En su primer ingreso va a tener que elegir la suya.</p>
+{% endif %}
+
+<form method="post" novalidate class="card card-body mt-3">
+    {{ form.hidden_tag() }}
+    <div class="row">
+        {{ campo(form.nombre) }}
+        {{ campo(form.apellido) }}
+        {{ campo(form.email) }}
+        {{ campo(form.legajo) }}
+        {{ campo(form.id_rol, "col-md-4") }}
+        {{ campo(form.id_departamento, "col-md-4") }}
+        {{ campo(form.id_puesto, "col-md-4") }}
+        {{ campo(form.fecha_nacimiento, "col-md-3") }}
+        {{ campo(form.fecha_ingreso, "col-md-3") }}
+        {{ campo(form.telefono, "col-md-6") }}
+        {{ campo(form.direccion, "col-12") }}
+    </div>
+    <div class="d-flex gap-2">
+        {{ form.enviar(class="btn btn-primary") }}
+        <a class="btn btn-outline-secondary" href="{{ url_for('usuarios.lista') }}">Cancelar</a>
+    </div>
+</form>
+{% endblock %}

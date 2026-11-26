@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% from "_formulario.html" import boton_post %}
+
+{% block title %}Usuarios · Pintegral{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Usuarios</h1>
+    <a class="btn btn-primary" href="{{ url_for('usuarios.nuevo') }}">Nuevo usuario</a>
+</div>
+
+{# Filtros por GET: quedan en la URL, así se puede guardar o compartir la búsqueda. #}
+<form method="get" class="row g-2 mb-3">
+    {% if current_user.tiene_rol(roles.ADMINISTRADOR) %}
+    <div class="col-auto">
+        <select name="area" class="form-select form-select-sm">
+            <option value="">Todas las áreas</option>
+            {% for area in areas %}
+                <option value="{{ area.id_departamento }}" {% if area.id_departamento == id_area %}selected{% endif %}>{{ area.nombre }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    {% endif %}
+    <div class="col-auto">
+        <select name="estado" class="form-select form-select-sm">
+            <option value="activos" {% if estado == 'activos' %}selected{% endif %}>Activos</option>
+            <option value="inactivos" {% if estado == 'inactivos' %}selected{% endif %}>Dados de baja</option>
+            <option value="todos" {% if estado == 'todos' %}selected{% endif %}>Todos</option>
+        </select>
+    </div>
+    <div class="col-auto"><button class="btn btn-sm btn-outline-secondary">Filtrar</button></div>
+</form>
+
+<div class="table-responsive">
+<table class="table table-hover bg-white align-middle">
+    <thead class="table-light">
+        <tr><th>Legajo</th><th>Nombre</th><th>Email</th><th>Rol</th><th>Área · Puesto</th>
+            <th>Estado</th><th>Último acceso</th><th class="text-end">Acciones</th></tr>
+    </thead>
+    <tbody>
+    {% for u in usuarios %}
+        <tr>
+            <td>{{ u.numero_legajo }}</td>
+            <td>{{ u.apellido }}, {{ u.nombre }}
+                {% if u.debe_cambiar_clave %}<span class="badge text-bg-warning ms-1">clave temporal</span>{% endif %}</td>
+            <td>{{ u.email }}</td>
+            <td>{{ u.rol.nombre }}</td>
+            <td>{{ u.departamento.nombre }}{% if u.puesto %} · {{ u.puesto.nombre }}{% endif %}</td>
+            <td>{% if u.activo %}<span class="badge text-bg-success">Activo</span>
+                {% else %}<span class="badge text-bg-secondary">De baja</span>{% endif %}</td>
+            <td>{{ u.ultimo_acceso.strftime('%d/%m/%Y %H:%M') if u.ultimo_acceso else '-' }}</td>
+            <td class="text-end text-nowrap">
+                {% if permisos.puede_gestionar_a(current_user, u) %}
+                    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('usuarios.editar', id_usuario=u.id_usuario) }}">Editar</a>
+                    {% if u.id_usuario != current_user.id_usuario %}
+                        {{ boton_post(url_for('usuarios.restablecer_clave', id_usuario=u.id_usuario), 'Restablecer clave',
+                                      confirmar='Se va a generar una contraseña temporal nueva. ¿Continuar?') }}
+                        {% if u.activo %}
+                            {{ boton_post(url_for('usuarios.cambiar_estado', id_usuario=u.id_usuario), 'Dar de baja', 'btn-outline-danger',
+                                          confirmar='¿Dar de baja a ' ~ u.nombre_completo ~ '?', campos={'activo': 0}) }}
+                        {% else %}
+                            {{ boton_post(url_for('usuarios.cambiar_estado', id_usuario=u.id_usuario), 'Reactivar', 'btn-outline-success',
+                                          campos={'activo': 1}) }}
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+            </td>
+        </tr>
+    {% else %}
+        {# {% else %} de un for: se muestra si la lista está vacía. #}
+        <tr><td colspan="8" class="text-center text-muted py-4">No hay usuarios con ese filtro.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}

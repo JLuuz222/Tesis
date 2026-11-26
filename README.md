@@ -65,6 +65,7 @@ Una base nueva creada con el `der_v3.sql` actual no los necesita.
 | Script | Qué cambia |
 |---|---|
 | `001_legajo_y_dominios_email.sql` | Legajo de 5 dígitos con ceros (`CHAR(5)`) y dominios de email permitidos |
+| `002_cambio_de_clave_obligatorio.sql` | Columna `debe_cambiar_clave`, para las contraseñas temporales |
 
 ## Reglas de negocio de usuarios
 
@@ -80,6 +81,18 @@ Están en `app/business/validaciones_usuario.py`:
 
 | Rol | Qué puede hacer |
 |---|---|
-| Administrador | Gestiona usuarios y áreas; ve el estado del sistema y todos los reportes |
-| Jefe de área | Crea, asigna y supervisa las tareas de su área |
+| Administrador | Gestiona todos los usuarios, áreas y puestos; ve el estado del sistema y todos los reportes |
+| Jefe de área | Gestiona a los empleados de su área; crea, asigna y supervisa las tareas de su área |
 | Empleado | Ve y actualiza las tareas que tiene asignadas |
+
+## Usuarios nuevos y contraseñas temporales
+
+Desde **Usuarios**, el Administrador (y el Jefe de área, para empleados de su
+área) da de alta a una persona. El sistema genera una contraseña temporal que
+se muestra **una sola vez**: hay que pasársela a la persona por un medio
+privado. En su primer ingreso, el sistema la obliga a elegir su propia
+contraseña antes de usar cualquier otra página. Lo mismo pasa con
+"Restablecer clave".
+
+Las bajas de usuarios y áreas son lógicas (`activo = 0`): no se borran, para
+no perder su historial.

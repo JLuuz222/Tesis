@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% from "_formulario.html" import campo %}
+
+{% block title %}Cambiar contraseña · Pintegral{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <h1 class="h4 mb-3">Cambiar contraseña</h1>
+        {% if current_user.debe_cambiar_clave %}
+            <div class="alert alert-warning">
+                Estás usando una contraseña temporal. Elegí la tuya para poder usar el sistema.
+                En "Contraseña actual" poné la temporal que te dieron.
+            </div>
+        {% endif %}
+        <form method="post" novalidate class="card card-body">
+            {{ form.hidden_tag() }}
+            <div class="row">
+                {{ campo(form.clave_actual, "col-12") }}
+                {{ campo(form.clave_nueva, "col-12") }}
+                {{ campo(form.confirmacion, "col-12") }}
+            </div>
+            <p class="form-text">Mínimo 8 caracteres, con mayúscula, minúscula, número y carácter especial
+               (+ - @ / . * _), sin tu nombre, tu apellido ni tu legajo.</p>
+            {{ form.enviar(class="btn btn-primary") }}
+        </form>
+    </div>
+</div>
+{% endblock %}

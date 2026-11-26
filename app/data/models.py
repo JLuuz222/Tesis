@@ -90,6 +90,8 @@ class Usuario(UserMixin, db.Model):
     email: db.Mapped[str] = db.mapped_column(db.String(100), unique=True)
     # Nunca la contraseña real: solo su hash (ver business/auth_service.py).
     password_hash: db.Mapped[str] = db.mapped_column(db.String(255))
+    # True: tiene una clave temporal y debe elegir la suya al entrar.
+    debe_cambiar_clave: db.Mapped[bool] = db.mapped_column(default=False)
     # Texto de 5 dígitos ("00005"), no número: un INT no guarda los ceros
     # a la izquierda. La base controla el formato con un CHECK.
     numero_legajo: db.Mapped[str] = db.mapped_column(db.CHAR(5), unique=True)

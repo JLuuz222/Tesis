@@ -2,7 +2,8 @@
 -- TESIS2026 - Sistema de gestión de tareas interdepartamentales (Pintegral)
 -- DER v3 - Script de creación de la base de datos (MySQL 8.4 LTS)
 -- Probado en MySQL 8.4.2 y 8.0.46.
--- Incluye la migración 001 (legajo CHAR(5) y dominios de email).
+-- Incluye las migraciones 001 (legajo CHAR(5) y dominios de email) y
+-- 002 (cambio de contraseña obligatorio).
 --
 -- Convenciones:
 --   * Nombres de tablas y columnas en singular, minúscula y snake_case.
@@ -74,6 +75,7 @@ CREATE TABLE usuario (
     apellido          VARCHAR(100) NOT NULL,
     email             VARCHAR(100) NOT NULL,
     password_hash     VARCHAR(255) NOT NULL,
+    debe_cambiar_clave TINYINT(1)  NOT NULL DEFAULT 0,
     numero_legajo     CHAR(5)      NOT NULL,
     id_rol            INT          NOT NULL,
     id_departamento   INT          NOT NULL,

@@ -16,8 +16,16 @@
             {# current_user lo pone Flask-Login en todas las plantillas. #}
             {% if current_user.is_authenticated %}
             <div class="d-flex align-items-center gap-3">
-                {% if current_user.tiene_rol(roles.ADMINISTRADOR) %}
-                    <a class="link-light small" href="{{ url_for('main.estado_sistema') }}">Estado del sistema</a>
+                {# Con clave temporal solo se muestra "Cerrar sesión": no puede ir a otro lado. #}
+                {% if not current_user.debe_cambiar_clave %}
+                    {% if permisos.puede_gestionar_usuarios(current_user) %}
+                        <a class="link-light small" href="{{ url_for('usuarios.lista') }}">Usuarios</a>
+                    {% endif %}
+                    {% if permisos.puede_gestionar_areas(current_user) %}
+                        <a class="link-light small" href="{{ url_for('areas.lista') }}">Áreas</a>
+                        <a class="link-light small" href="{{ url_for('main.estado_sistema') }}">Estado del sistema</a>
+                    {% endif %}
+                    <a class="link-light small" href="{{ url_for('auth.cambiar_clave') }}">Cambiar contraseña</a>
                 {% endif %}
                 <span class="text-light small">
                     {{ current_user.nombre_completo }} · {{ current_user.rol.nombre }}

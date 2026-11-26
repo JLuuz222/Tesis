@@ -11,7 +11,9 @@ Cada función recibe el dato, lo valida y devuelve el valor "limpio"
 para mostrarle al usuario.
 """
 import re
+import secrets
 import unicodedata
+from datetime import date
 
 
 class ErrorDeValidacion(Exception):
@@ -55,17 +57,22 @@ DOMINIOS_POR_DEFECTO = (
 _PATRON_EMAIL = re.compile(r"[^@\s]+@([^@\s]+\.[^@\s]+)")
 
 
+def validar_formato_email(email: str) -> str:
+    """Controla solo el formato (algo@dominio.ext). Devuelve el email en minúsculas."""
+    email = email.strip().lower()
+    if not _PATRON_EMAIL.fullmatch(email):
+        raise ErrorDeValidacion("El email no tiene un formato válido.")
+    return email
+
+
 def normalizar_email(email: str, dominios_permitidos: tuple[str, ...]) -> str:
     """Valida el formato y el dominio. Devuelve el email en minúsculas.
 
     El dominio se compara COMPLETO (lo que está después de la @). Si
     comparáramos con "termina en gmail.com", pasaría "x@falsogmail.com".
     """
-    email = email.strip().lower()
-    coincidencia = _PATRON_EMAIL.fullmatch(email)
-    if not coincidencia:
-        raise ErrorDeValidacion("El email no tiene un formato válido.")
-    dominio = coincidencia.group(1)
+    email = validar_formato_email(email)
+    dominio = email.rsplit("@", 1)[1]
     if dominio not in dominios_permitidos:
         raise ErrorDeValidacion(
             "Solo se aceptan emails de estos dominios: " + ", ".join(dominios_permitidos) + ".")
@@ -123,3 +130,66 @@ def validar_clave(clave: str, nombre: str, apellido: str, legajo: str) -> str:
     if problemas:
         raise ErrorDeValidacion("La contraseña no cumple: " + "; ".join(problemas) + ".")
     return clave
+
+
+# --- Datos generales -------------------------------------------------------------
+
+def texto_obligatorio(valor: str | None, nombre_campo: str, largo_maximo: int) -> str:
+    """Saca los espacios de los extremos y controla que no quede vacío ni sea muy largo."""
+    valor = (valor or "").strip()
+    if not valor:
+        raise ErrorDeValidacion(f"{nombre_campo} es obligatorio.")
+    if len(valor) > largo_maximo:
+        raise ErrorDeValidacion(f"{nombre_campo} admite hasta {largo_maximo} caracteres.")
+    return valor
+
+
+def texto_opcional(valor: str | None, nombre_campo: str, largo_maximo: int) -> str | None:
+    """Como texto_obligatorio, pero un campo vacío se guarda como NULL."""
+    valor = (valor or "").strip()
+    if not valor:
+        return None
+    if len(valor) > largo_maximo:
+        raise ErrorDeValidacion(f"{nombre_campo} admite hasta {largo_maximo} caracteres.")
+    return valor
+
+
+def validar_fecha_nacimiento(fecha: date | None) -> date | None:
+    """La fecha de nacimiento, si se carga, tiene que ser anterior a hoy."""
+    if fecha is not None and fecha >= date.today():
+        raise ErrorDeValidacion("La fecha de nacimiento tiene que ser anterior a hoy.")
+    return fecha
+
+
+# --- Contraseña temporal ------------------------------------------------------------
+
+LARGO_CLAVE_TEMPORAL = 12
+
+
+def generar_clave_temporal(nombre: str, apellido: str, legajo: str) -> str:
+    """Genera una contraseña aleatoria que cumple todas las reglas.
+
+    Se usa al crear un usuario o al restablecerle la contraseña. Usa el
+    módulo secrets, y no random: random es predecible (sirve para juegos o
+    simulaciones), secrets está hecho para claves y tokens.
+    """
+    # Sin letras que se confunden al dictarlas o copiarlas: O/0, l/1/I.
+    mayusculas = "ABCDEFGHJKLMNPQRSTUVWXYZ"
+    minusculas = "abcdefghijkmnpqrstuvwxyz"
+    numeros = "23456789"
+    especiales = "#@*+-_"
+    todos = mayusculas + minusculas + numeros + especiales
+
+    while True:
+        # Un carácter de cada grupo, para cumplir la regla, y el resto al azar.
+        caracteres = [secrets.choice(mayusculas), secrets.choice(minusculas),
+                      secrets.choice(numeros), secrets.choice(especiales)]
+        caracteres += [secrets.choice(todos) for _ in range(LARGO_CLAVE_TEMPORAL - 4)]
+        # Mezcla el orden, para que no empiece siempre con una mayúscula.
+        secrets.SystemRandom().shuffle(caracteres)
+        clave = "".join(caracteres)
+        try:
+            # Por si al azar contiene parte del nombre o el legajo.
+            return validar_clave(clave, nombre, apellido, legajo)
+        except ErrorDeValidacion:
+            continue

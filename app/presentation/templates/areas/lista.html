@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% from "_formulario.html" import boton_post %}
+
+{% block title %}Áreas · Pintegral{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Áreas</h1>
+    <a class="btn btn-primary" href="{{ url_for('areas.nueva') }}">Nueva área</a>
+</div>
+
+<div class="table-responsive">
+<table class="table table-hover bg-white align-middle">
+    <thead class="table-light">
+        <tr><th>Código</th><th>Nombre</th><th>Jefe</th><th class="text-end">Usuarios activos</th>
+            <th class="text-end">Puestos</th><th>Estado</th><th class="text-end">Acciones</th></tr>
+    </thead>
+    <tbody>
+    {# Cada fila es una tupla (area, usuarios_activos, puestos): se "desarma" en el for. #}
+    {% for area, usuarios_activos, puestos in filas %}
+        <tr>
+            <td>{{ area.codigo }}</td>
+            <td>{{ area.nombre }}</td>
+            <td>{{ area.jefe.nombre_completo if area.jefe else '-' }}</td>
+            <td class="text-end">{{ usuarios_activos }}</td>
+            <td class="text-end">{{ puestos }}</td>
+            <td>{% if area.activo %}<span class="badge text-bg-success">Activa</span>
+                {% else %}<span class="badge text-bg-secondary">De baja</span>{% endif %}</td>
+            <td class="text-end text-nowrap">
+                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('areas.editar', id_area=area.id_departamento) }}">Editar</a>
+                <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('areas.puestos', id_area=area.id_departamento) }}">Puestos</a>
+                {% if area.activo %}
+                    {{ boton_post(url_for('areas.cambiar_estado', id_area=area.id_departamento), 'Dar de baja', 'btn-outline-danger',
+                                  confirmar='¿Dar de baja el área ' ~ area.nombre ~ '?', campos={'activo': 0}) }}
+                {% else %}
+                    {{ boton_post(url_for('areas.cambiar_estado', id_area=area.id_departamento), 'Reactivar', 'btn-outline-success',
+                                  campos={'activo': 1}) }}
+                {% endif %}
+            </td>
+        </tr>
+    {% else %}
+        <tr><td colspan="7" class="text-center text-muted py-4">Todavía no hay áreas.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}
